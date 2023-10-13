@@ -15,15 +15,6 @@ class Claims(Base):
     facility_class_id = Column(Integer, ForeignKey("t_facility_class.id"), nullable=False)
     charge_allowed = Column(Integer)
 
-    inj_dis = relationship("Injury_Disease", backref=backref('t_claims'),
-                           cascade="all, delete-orphan")
-
-    specialty = relationship("Specialty", backref=backref('t_claims'),
-                             cascade="all, delete-orphan")
-
-    facility_class = relationship("Facility_Class", backref=backref('t_claims'),
-                                  cascade="all, delete-orphan")
-
     def __repr__(self):
         return (
             f"Claims(claim_trans={self.claim_trans!r},"
@@ -31,7 +22,26 @@ class Claims(Base):
         )
 
 
-class Injury_Disease(Base):
+class ClaimsPaid(Base):
+    __tablename__ = "t_claims_paid"
+
+    pay_trans = Column(String, primary_key=True)
+    claim_trans = Column(Integer, ForeignKey("t_claims.claim_trans"), nullable=False)
+    charge_allowed = Column(Integer)
+    deduct_copay = Column(Integer)
+    charge_trans_date = Column(String)
+    period = Column(Integer)
+    quarter = Column(String)
+
+    def __repr__(self):
+        return (
+            f"ClaimsPaid(pay_trans={self.pay_trans!r},"
+            f"claim_trans={self.claim_trans}, charge_allowed={self.charge_allowed}, deduct_copay={self.deduct_copay}, charge_trans_date={self.charge_trans_date}, period={self.period}, quarter={self.quarter}"
+        )
+
+
+
+class InjuryDisease(Base):
     __tablename__ = 't_injury_disease'
 
     id = Column(Integer, primary_key=True)
@@ -44,6 +54,25 @@ class Injury_Disease(Base):
 class Specialty(Base):
     __tablename__ = 't_specialty'
 
+    id = Column(Integer, primary_key=True)
+    specialty_title = Column(String)
 
-class Facility_Class(Base):
+    claims = relationship('Claims', backref=backref('t_specialty'),
+                          cascade='all, delete-orphan')
+
+
+class FacilityClass(Base):
     __tablename__ = 't_facility_class'
+
+    id = Column(Integer, primary_key=True)
+    facility_class_title = Column(String)
+
+    claims = relationship('Claims', backref=backref('t_facility_class'),
+                          cascade='all, delete-orphan')
+
+
+class ClaimCountV(Base):
+    __tablename__ = 'v_claim_count'
+
+    Period = Column(Integer, primary_key=True)
+    Claim_Count = Column(Integer)
